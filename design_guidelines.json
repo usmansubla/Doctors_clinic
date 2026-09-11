@@ -1,0 +1,172 @@
+{
+  "app_name": "ClinicFlow CRM",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "A highly readable, trustworthy, and calming clinical dashboard that uses warm off-whites and sage green to organize dense booking data with iOS-native fluidity.",
+  "color": {
+    "surface": "#FFFFFF",
+    "onSurface": "#1A1A18",
+    "surfaceSecondary": "#F5F5F3",
+    "onSurfaceSecondary": "#2C2C2A",
+    "surfaceTertiary": "#E8E8E6",
+    "onSurfaceTertiary": "#454542",
+    "surfaceInverse": "#1A1A18",
+    "onSurfaceInverse": "#FFFFFF",
+    "brand": "#3C5A44",
+    "brandPrimary": "#3C5A44",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#507559",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#E5EBE6",
+    "onBrandTertiary": "#253A2A",
+    "success": "#3C5A44",
+    "onSuccess": "#FFFFFF",
+    "warning": "#C78B24",
+    "onWarning": "#FFFFFF",
+    "error": "#B84B4B",
+    "onError": "#FFFFFF",
+    "info": "#4A6051",
+    "onInfo": "#FFFFFF",
+    "border": "#E8E8E6",
+    "borderStrong": "#CFCFCB",
+    "divider": "#F0F0ED"
+  },
+  "typography": {
+    "displayFontFamily": "Space Grotesk",
+    "textFontFamily": "Plus Jakarta Sans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous padding around content. Use standard iOS spacing rhythms with clear grouping for data modules.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 1,
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use glass on the bottom tab bar",
+      "Use glass on the sticky header when scrolling through the bookings list",
+      "Use glass on the bottom-sheet header/drag handle when rescheduling"
+    ],
+    "dont's": [
+      "Do not use glass on booking cards or dashboard metric cards",
+      "Do not use glass on form inputs"
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Login",
+      "purpose": "A simple email/password entry gate for clinic staff.",
+      "states": {
+        "loading": "Spinner over disabled button.",
+        "empty": "N/A",
+        "error": "Error toast showing invalid credentials."
+      },
+      "layout": "Full-screen layout featuring a top header space with the clinic logo, followed by clean input fields and a primary button. Use a soft background image with a vertical gradient scrim overlay to maintain extreme contrast for readability. No extra social logins required."
+    },
+    {
+      "name": "Dashboard",
+      "purpose": "Provides instant visibility into weekly deals and daily booking operational metrics.",
+      "states": {
+        "loading": "Skeleton UI replicating the 4 metric cards.",
+        "empty": "Illustration indicating 'No data for this week yet'.",
+        "error": "Card overlay with a retry button to fetch Google Sheet data."
+      },
+      "layout": "Header with 'Today's Overview'. Below, a 2-column grid of 4 metric cards (Total Deals, Bookings Left, Completed, Cancelled). Each card uses 'surfaceSecondary' with large 'Space Grotesk' numbers and an icon inside a 'brandTertiary' tinted rounded square. Below metrics, display a quick summary chart for weekly analytics."
+    },
+    {
+      "name": "Bookings",
+      "purpose": "A master list of all bookings that clinic staff can search, filter, and drill into.",
+      "states": {
+        "loading": "Skeleton list items.",
+        "empty": "Illustration of an empty calendar or folder with 'No bookings match your filters'.",
+        "error": "Readable text block 'Unable to sync with Google Sheets' and a primary Retry button."
+      },
+      "layout": "Sticky header with a full-width Search bar and a horizontally scrolling row of filter chips (Date, Status) directly beneath it. The list below uses accordion-style cards for each booking (Name, Phone, Time). Cards have status badges (Upcoming, Completed, Cancelled)."
+    },
+    {
+      "name": "Booking Detail Sheet",
+      "purpose": "Allows staff to view full details and trigger status updates or reschedule flows.",
+      "states": {
+        "loading": "Spinner on action buttons when webhook is firing.",
+        "empty": "N/A",
+        "error": "Inline error near the action button if the webhook fails."
+      },
+      "layout": "Presented as a bottom sheet over the Bookings list. Displays detailed patient info. Features two prominent action buttons: 'Mark Completed' / 'Cancel', and a 'Reschedule' button. Pressing reschedule transitions the sheet to a Date/Time picker view before submitting the webhook."
+    },
+    {
+      "name": "Analytics",
+      "purpose": "Detailed weekly charts, completion rates, and historical trends.",
+      "states": {
+        "loading": "Chart skeleton loaders.",
+        "empty": "Illustration 'Not enough data to display trends'.",
+        "error": "Error state with a retry button to fetch graph data."
+      },
+      "layout": "Vertical scrollview with distinct sections for Weekly Trends (Bar chart) and Completion Rates (Line/Pie). Use 'surfaceSecondary' cards to encapsulate charts with clear 'Space Grotesk' metric callouts. Maintain ample spacing between sections."
+    },
+    {
+      "name": "Settings",
+      "purpose": "Manage app configuration and n8n webhook URLs.",
+      "states": {
+        "loading": "Spinner overlay when saving settings.",
+        "empty": "N/A",
+        "error": "Validation error if the URL format is invalid."
+      },
+      "layout": "Simple list of configuration options. Includes text inputs for Webhook URLs. Use standard iOS grouped list styling with a sticky 'Save' button pinned at the bottom of the scroll view."
+    }
+  ],
+  "images": {
+    "login_hero_bg": {
+      "url": "https://images.unsplash.com/photo-1762625570087-6d98fca29531?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtaW5pbWFsaXN0JTIwZGVudGFsJTIwY2xpbmljJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg3NTg5MTQ2fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Modern minimal clinic interior"
+    },
+    "clinic_logo": {
+      "url": "https://images.pexels.com/photos/6809665/pexels-photo-6809665.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "alt": "Dental clinic tooth logo"
+    },
+    "empty_state_illustration": {
+      "url": "https://images.pexels.com/photos/4252525/pexels-photo-4252525.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "alt": "Minimal abstract paper composition for empty states"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the '1 iOS-Native Clean' personality. Avoid all muddy colors and blue hues. The accent color is exclusively Sage Green (#3C5A44).",
+    "Ensure touch targets are at least 44x44pt and apply hitSlop where visual footprint is smaller.",
+    "Implement a Gradient-to-Dark Scrim (Top -> Bottom, Transparent -> #1A1A18) on the 'Login' screen background image, guaranteeing text contrast.",
+    "The 4 metric cards on the Dashboard must use a 2-column grid utilizing flexWrap and space-between layout.",
+    "When integrating n8n webhooks, ensure real-time visual feedback (loading spinners, success haptics, error toasts) since API latency might vary.",
+    "For the Bookings list, place a search bar at the top with horizontally scrolling filter chips right underneath to mimic high-end patterns from Mobbin/60fps.design.",
+    "Booking cards should utilize tinted icon containers (brandTertiary rounded square) for status differentiation."
+  ]
+}
