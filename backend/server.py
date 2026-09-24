@@ -110,6 +110,16 @@ class RescheduleIn(BaseModel):
     new_date: str
     new_time: str
 
+class N8nBookingWebhook(BaseModel):
+    action: str  # "book" | "cancel" | "reschedule"
+    name: str
+    phone: str
+    date: str
+    time: str
+    event_id: Optional[str] = None
+    new_date: Optional[str] = None
+    new_time: Optional[str] = None
+
 
 class WebhookSettings(BaseModel):
     check_availability: str = ""
@@ -227,6 +237,152 @@ async def me(u: User = Depends(current_user)):
 
 
 # ---------- Bookings ----------
+@api.post("/webhooks/booking")
+async def n8n_booking_webhook(inp: N8nBookingWebhook):
+    """
+    Receives booking changes directly from n8n.
+
+    Actions:
+    - book
+    - cancel
+    - reschedule
+    """
+
+    now = datetime.now(timezone.utc)
+
+    # ---------- BOOK ----------
+    if inp.action == "book":
+        booking = Booking(
+            name=inp.name,
+            phone=inp.phone,
+            date=inp.date,
+            time=inp.time,
+            event_id=inp.event_id,
+            updated_at=now,
+        )
+
+        # Prevent duplicate booking if n8n sends the same event twice
+        if inp.event_id:
+            existing = await db.bookings.find_one(
+                {"event_id": inp.event_id},
+                {"_id": 0},
+            )
+
+            if existing:
+                return {
+                    "ok": True,
+                    "action": "book",
+                    "message": "Booking already exists",
+                    "booking": normalize_booking(existing),
+                }
+
+        await db.bookings.insert_one(booking.model_dump())
+
+        return {
+            "ok": True,
+            "action": "book",
+            "message": "Booking added to CRM",
+            "booking": normalize_booking(booking.model_dump()),
+        }
+
+    # ---------- CANCEL ----------
+    if inp.action == "cancel":
+        query = (
+            {"event_id": inp.event_id}
+            if inp.event_id
+            else {
+                "name": inp.name,
+                "phone": inp.phone,
+                "date": inp.date,
+                "time": inp.time,
+            }
+        )
+
+        existing = await db.bookings.find_one(query, {"_id": 0})
+
+        if not existing:
+            raise HTTPException(
+                status_code=404,
+                detail="Booking not found in CRM",
+            )
+
+        await db.bookings.update_one(
+            {"id": existing["id"]},
+            {
+                "$set": {
+                    "manual_status": "cancelled",
+                    "updated_at": now,
+                }
+            },
+        )
+
+        existing["manual_status"] = "cancelled"
+        existing["updated_at"] = now
+
+        return {
+            "ok": True,
+            "action": "cancel",
+            "message": "Booking cancelled in CRM",
+            "booking": normalize_booking(existing),
+        }
+
+    # ---------- RESCHEDULE ----------
+    if inp.action == "reschedule":
+        if not inp.new_date or not inp.new_time:
+            raise HTTPException(
+                status_code=400,
+                detail="new_date and new_time are required",
+            )
+
+        query = (
+            {"event_id": inp.event_id}
+            if inp.event_id
+            else {
+                "name": inp.name,
+                "phone": inp.phone,
+                "date": inp.date,
+                "time": inp.time,
+            }
+        )
+
+        existing = await db.bookings.find_one(query, {"_id": 0})
+
+        if not existing:
+            raise HTTPException(
+                status_code=404,
+                detail="Booking not found in CRM",
+            )
+
+        await db.bookings.update_one(
+            {"id": existing["id"]},
+            {
+                "$set": {
+                    "date": inp.new_date,
+                    "time": inp.new_time,
+                    "manual_status": None,
+                    "updated_at": now,
+                }
+            },
+        )
+
+        existing["date"] = inp.new_date
+        existing["time"] = inp.new_time
+        existing["manual_status"] = None
+        existing["updated_at"] = now
+
+        return {
+            "ok": True,
+            "action": "reschedule",
+            "message": "Booking rescheduled in CRM",
+            "booking": normalize_booking(existing),
+        }
+
+    raise HTTPException(
+        status_code=400,
+        detail="Invalid action. Use book, cancel, or reschedule.",
+    )
+
+
 @api.get("/bookings")
 async def list_bookings(
     status_filter: Optional[str] = None,
